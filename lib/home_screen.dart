@@ -1,8 +1,8 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:ml_text_recognition/image_preview.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -28,15 +28,10 @@ class _HomeScreenState extends State<HomeScreen> {
     imagePicker = ImagePicker();
   }
 
-  void _pickImage() async {
-    final pickedImage =
-        await imagePicker.pickImage(source: ImageSource.gallery);
+  void _pickImage({required ImageSource source}) async {
+    final pickedImage = await imagePicker.pickImage(source: source);
 
     if (pickedImage == null) {
-      setState(() {
-        pickedImagePath = null;
-        recognizedText = "";
-      });
       return;
     }
 
@@ -66,43 +61,125 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
+  void _chooseImageSourceModal() {
+    showModalBottomSheet(
+      context: context,
+      builder: (context) {
+        return Padding(
+          padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              ListTile(
+                leading: const Icon(Icons.photo_library),
+                title: const Text('Choose from gallery'),
+                onTap: () {
+                  Navigator.pop(context);
+                  _pickImage(source: ImageSource.gallery);
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.camera_alt),
+                title: const Text('Take a picture'),
+                onTap: () {
+                  Navigator.pop(context);
+                  _pickImage(source: ImageSource.camera);
+                },
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  void _copyTextToClipboard() async {
+    if (recognizedText.isNotEmpty) {
+      await Clipboard.setData(ClipboardData(text: recognizedText));
+      if (!mounted) {
+        return;
+      }
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Text copied to clipboard'),
+        ),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text('ML Text Recognition'),
       ),
-      body: Center(
+      body: SafeArea(
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            if (pickedImagePath != null) ...[
-              Image.file(
-                File(pickedImagePath!),
-                width: 200,
-                height: 200,
-                fit: BoxFit.contain,
-              ),
-              const SizedBox(height: 20),
-            ],
-            ElevatedButton(
-              onPressed: _pickImage,
-              child: const Text('Pick an image'),
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: ImageViewer(imagePath: pickedImagePath),
             ),
-            if (isRecognizing) ...[
-              const SizedBox(height: 20),
-              const CircularProgressIndicator(),
-            ],
-            if (recognizedText.isNotEmpty) ...[
-              const SizedBox(height: 20),
-              Flex(
-                direction: Axis.vertical,
+            ElevatedButton(
+              onPressed: isRecognizing ? null : _chooseImageSourceModal,
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
                 children: [
-                  SelectableText(
-                    recognizedText,
-                    style: const TextStyle(fontSize: 20),
+                  const Text('Pick an image'),
+                  if (isRecognizing) ...[
+                    const SizedBox(width: 20),
+                    const SizedBox(
+                      width: 16,
+                      height: 16,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 1.5,
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+            const Divider(),
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text(
+                    "Recognized Text",
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  IconButton(
+                    icon: const Icon(
+                      Icons.copy,
+                      size: 16,
+                    ),
+                    onPressed: _copyTextToClipboard,
                   ),
                 ],
+              ),
+            ),
+            if (!isRecognizing) ...[
+              Expanded(
+                child: Scrollbar(
+                  child: SingleChildScrollView(
+                    padding: const EdgeInsets.all(16),
+                    child: Row(
+                      children: [
+                        Flexible(
+                          child: SelectableText(
+                            recognizedText.isEmpty
+                                ? "No text recognized"
+                                : recognizedText,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
               ),
             ],
           ],
