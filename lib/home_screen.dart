@@ -28,7 +28,7 @@ class _HomeScreenState extends State<HomeScreen> {
     imagePicker = ImagePicker();
   }
 
-  void _pickImage({required ImageSource source}) async {
+  void _pickImageAndProcess({required ImageSource source}) async {
     final pickedImage = await imagePicker.pickImage(source: source);
 
     if (pickedImage == null) {
@@ -53,7 +53,15 @@ class _HomeScreenState extends State<HomeScreen> {
         }
       }
     } catch (e) {
-      print(e);
+      if (!mounted) {
+        return;
+      }
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error recognizing text: $e'),
+        ),
+      );
     } finally {
       setState(() {
         isRecognizing = false;
@@ -75,7 +83,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 title: const Text('Choose from gallery'),
                 onTap: () {
                   Navigator.pop(context);
-                  _pickImage(source: ImageSource.gallery);
+                  _pickImageAndProcess(source: ImageSource.gallery);
                 },
               ),
               ListTile(
@@ -83,7 +91,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 title: const Text('Take a picture'),
                 onTap: () {
                   Navigator.pop(context);
-                  _pickImage(source: ImageSource.camera);
+                  _pickImageAndProcess(source: ImageSource.camera);
                 },
               ),
             ],
@@ -119,7 +127,7 @@ class _HomeScreenState extends State<HomeScreen> {
           children: <Widget>[
             Padding(
               padding: const EdgeInsets.all(16.0),
-              child: ImageViewer(imagePath: pickedImagePath),
+              child: ImagePreview(imagePath: pickedImagePath),
             ),
             ElevatedButton(
               onPressed: isRecognizing ? null : _chooseImageSourceModal,
@@ -142,7 +150,11 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             const Divider(),
             Padding(
-              padding: const EdgeInsets.all(16.0),
+              padding: const EdgeInsets.only(
+                left: 16,
+                right: 16,
+                bottom: 16,
+              ),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [

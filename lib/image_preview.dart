@@ -1,9 +1,8 @@
 import 'dart:io';
-
 import 'package:flutter/material.dart';
 
-class ImageViewer extends StatelessWidget {
-  const ImageViewer({
+class ImagePreview extends StatelessWidget {
+  const ImagePreview({
     super.key,
     required this.imagePath,
   });
@@ -29,10 +28,12 @@ class ImageViewer extends StatelessWidget {
       ),
       child: imagePath == null
           ? const Center(
-              child: Text("No image selected",
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                  )),
+              child: Text(
+                "No image selected",
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
             )
           : Image.file(
               File(imagePath!),
