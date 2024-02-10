@@ -1,16 +1,25 @@
-# ml_text_recognition
+# ML Text Recognition with Flutter
 
-A new Flutter project.
+This is the complete project described in the article "ML Text Recognition with Flutter" available to read here.
+
+This is a simple example of how to use the `google_mlkit_text_recognition` plugin to recognize text in an image.
 
 ## Getting Started
 
-This project is a starting point for a Flutter application.
+For help getting started with Flutter, view the online [documentation](https://flutter.io/).
 
-A few resources to get you started if this is your first Flutter project:
+### Install packages
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+```bash
+flutter pub get
+```
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+### Run the app
+
+```bash
+flutter run
+```
+
+## Screenshots
+
+![Screenshot](assets/img/screentshot.png)
